@@ -1,16 +1,17 @@
-import { expect } from "chai";
+import { expect, use } from "chai";
 import pkg from "pactum";
 const { spec } = pkg;
 import "dotenv/config";
-import { baseUrl, userID } from "../helpers/data.js";
+import { baseUrl, userID, user, password } from "../helpers/data.js";
 
+let token_response; // let - zmienna, którą można nadpisać
 describe("Api tests", () => {
-  it("get request", async () => {
+  it.skip("get request", async () => {
     const response = await spec()
       .get(`${baseUrl}/BookStore/v1/Books`)
       .inspect();
     const responseB = JSON.stringify(response.body);
-    console.log("is dotenv work ?" + " " + process.env.SECRET_PASSWORD); 
+    console.log("is dotenv work ?" + " " + process.env.SECRET_PASSWORD);
     expect(response.statusCode).to.eql(200);
     expect(responseB).to.include("Learning JavaScript Design Patterns"); // include - zawiera
     expect(response.body.books[1].title).to.eql(
@@ -18,16 +19,72 @@ describe("Api tests", () => {
     );
     expect(response.body.books[4].author).to.eql("Kyle Simpson"); // eql - porównanie czy
   });
-// tworzenie użytkownika
-  it.skip("Create a user", async () => { // it.skip() - można użyć aby pominąć wykonywanie bloku
+  // tworzenie użytkownika
+  it.skip("Create a user", async () => {
+    // it.skip() - można użyć aby pominąć wykonywanie bloku
     const response = await spec()
       .post(`${baseUrl}/Account/v1/User`)
       .withBody({
-        userName: "user_magda",
-        password: process.env.SECRET_PASSWORD,
+        userName: user,
+        password: password,
       })
       .inspect();
     expect(response.statusCode).to.eql(201);
-    // userId a62d9719-4f37-437c-a582-a5a7db364f18
   });
+  // generowanie tokenu
+  it.only("Generate token", async () => {
+    const response = await spec()
+      .post(`${baseUrl}/Account/v1/GenerateToken`)
+      .withBody({
+        userName: user,
+        password: password,
+      })
+      .inspect();
+    token_response = response.body.token;
+    console.log(token_response);
+    expect(response.statusCode).to.eql(200);
+    expect(response.body.result).to.eql("User authorized successfully.");
+  });
+
+  it.only("check token", async () => {
+    console.log("another it back " + token_response);
+  });
+  // dodanie książki z obecnej bazy książek
+  it.only("Add a book", async () => {
+    const response = await spec()
+      .post(`${baseUrl}/BookStore/v1/Books`)
+      .withBearerToken(token_response)
+      .withBody({
+        userId: userID,
+        collectionOfIsbns: [{ isbn: "9781593277574" }],
+      })
+      .inspect();
+    expect(response.statusCode).to.eql(201);
+  })
+
+  it("Check books in user", async () => {
+    const response = await spec()
+    .get(`${baseUrl}/Account/v1/User/${userID}`)
+    .inspect()
+    .withBearerToken(token_response)
+    expect(response.statusCode).to.eql(200)
+    expect(response.body.books).to.eql([])
+  })
+
+  it("Delete all books", async () => {
+    const respone = await spec()
+    .delete(`${baseUrl}/BookStore/v1/Books?UserId=${userID}`)
+    .inspect()
+    .withBearerToken(token_response)
+    expect(response.statusCode).to.eql(204)
+  })
+
+  it("Check books in user", async () => {
+    const response = await spec()
+    .get(`${baseUrl}/Account/v1/User/${userID}`)
+    .inspect()
+    .withBearerToken(token_response)
+    expect(response.statusCode).to.eql(200)
+    expect(response.body.books).to.eql([])
+  })
 });
