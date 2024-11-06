@@ -32,7 +32,7 @@ describe("Api tests", () => {
     expect(response.statusCode).to.eql(201);
   });
   // generowanie tokenu
-  it.only("Generate token", async () => {
+  it("Generate token", async () => {
     const response = await spec()
       .post(`${baseUrl}/Account/v1/GenerateToken`)
       .withBody({
@@ -46,11 +46,11 @@ describe("Api tests", () => {
     expect(response.body.result).to.eql("User authorized successfully.");
   });
 
-  it.only("check token", async () => {
+  it("check token", async () => {
     console.log("another it back " + token_response);
   });
   // dodanie książki z obecnej bazy książek
-  it.only("Add a book", async () => {
+  it("Add a book", async () => {
     const response = await spec()
       .post(`${baseUrl}/BookStore/v1/Books`)
       .withBearerToken(token_response)
@@ -62,7 +62,7 @@ describe("Api tests", () => {
     expect(response.statusCode).to.eql(201);
   })
 
-  it("Check books in user", async () => {
+  it.skip("Check books in user", async () => {
     const response = await spec()
     .get(`${baseUrl}/Account/v1/User/${userID}`)
     .inspect()
@@ -71,7 +71,7 @@ describe("Api tests", () => {
     expect(response.body.books).to.eql([])
   })
 
-  it("Delete all books", async () => {
+  it.skip("Delete all books", async () => {
     const respone = await spec()
     .delete(`${baseUrl}/BookStore/v1/Books?UserId=${userID}`)
     .inspect()
@@ -79,7 +79,7 @@ describe("Api tests", () => {
     expect(response.statusCode).to.eql(204)
   })
 
-  it("Check books in user", async () => {
+  it.skip("Check books in user", async () => {
     const response = await spec()
     .get(`${baseUrl}/Account/v1/User/${userID}`)
     .inspect()
