@@ -32,7 +32,7 @@ describe("Api tests", () => {
     expect(response.statusCode).to.eql(201);
   });
   // generowanie tokenu
-  it("Generate token", async () => {
+  it.only("Generate token", async () => {
     const response = await spec()
       .post(`${baseUrl}/Account/v1/GenerateToken`)
       .withBody({
@@ -50,41 +50,45 @@ describe("Api tests", () => {
     console.log("another it back " + token_response);
   });
   // dodanie książki z obecnej bazy książek
-  it("Add a book", async () => {
+  it.only("Add a book", async () => {
     const response = await spec()
       .post(`${baseUrl}/BookStore/v1/Books`)
       .withBearerToken(token_response)
       .withBody({
         userId: userID,
-        collectionOfIsbns: [{ isbn: "9781593277574" }],
+        collectionOfIsbns: [{ isbn: "9781449331818" }],
       })
       .inspect();
     expect(response.statusCode).to.eql(201);
-  })
+  });
 
-  it.skip("Check books in user", async () => {
+  it.only("Check books in user", async () => {
     const response = await spec()
-    .get(`${baseUrl}/Account/v1/User/${userID}`)
-    .inspect()
-    .withBearerToken(token_response)
-    expect(response.statusCode).to.eql(200)
-    expect(response.body.books).to.eql([])
-  })
+      .get(`${baseUrl}/Account/v1/User/${userID}`)
+      .inspect()
+      .withBearerToken(token_response);
+    expect(response.statusCode).to.eql(200);
+    expect(response.body.books[0].title).to.eql("Learning JavaScript Design Patterns");
+  });
 
-  it.skip("Delete all books", async () => {
-    const respone = await spec()
-    .delete(`${baseUrl}/BookStore/v1/Books?UserId=${userID}`)
-    .inspect()
-    .withBearerToken(token_response)
-    expect(response.statusCode).to.eql(204)
-  })
-
-  it.skip("Check books in user", async () => {
+  it.only("Delete all books", async () => {
     const response = await spec()
-    .get(`${baseUrl}/Account/v1/User/${userID}`)
-    .inspect()
-    .withBearerToken(token_response)
-    expect(response.statusCode).to.eql(200)
-    expect(response.body.books).to.eql([])
-  })
+      .delete(`${baseUrl}/BookStore/v1/Books?UserId=${userID}`)
+      .withBearerToken(token_response)
+      .withBody({
+        isbn: "9781449331818",
+        userId: userID,
+      })
+      .inspect();
+    expect(response.statusCode).to.eql(204);
+  });
+
+  it.only("Check books in user", async () => {
+    const response = await spec()
+      .get(`${baseUrl}/Account/v1/User/${userID}`)
+      .inspect()
+      .withBearerToken(token_response);
+    expect(response.statusCode).to.eql(200);
+    expect(response.body.books).to.eql([]);
+  });
 });
