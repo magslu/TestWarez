@@ -31,3 +31,10 @@ jobs:
         cache: 'npm'
     - run: npm ci
     - run: npm test
+
+    - name: Upload test report
+      if: always()
+      uses: action/upload-artifact@v4
+      with:
+        name: mochawesome-report
+        path: mochawesome-report/
